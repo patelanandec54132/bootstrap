@@ -162,6 +162,32 @@ $(function () {
       .bootstrapModal('toggle')
   })
 
+  QUnit.test('should not adjust the inline margin and padding of sticky and fixed elements when element do not have full width', function (assert) {
+    assert.expect(2)
+    var done = assert.async()
+    var content = [
+      '<div class="sticky-top" style="margin-right: 0; padding-right: 0; width: calc(100vw - 50%)"></div>',
+      '<div class="modal"><div class="modal-dialog"></div></div>'
+    ].join('')
+    $(content).appendTo('#qunit-fixture')
+
+    var stickyTopEl = $('.sticky-top')
+    var originalMargin = stickyTopEl.css('margin-right')
+    var originalPadding = stickyTopEl.css('padding-right')
+
+    var modal = $('.modal')
+    modal.on('shown.bs.modal', function () {
+      var currentMargin = stickyTopEl.css('margin-right')
+      var currentPadding = stickyTopEl.css('padding-right')
+
+      assert.strictEqual(currentMargin, originalMargin, 'sticky element\'s margin should not be adjusted while opening')
+      assert.strictEqual(currentPadding, originalPadding, 'sticky element\'s padding should not be adjusted while opening')
+      done()
+    })
+
+    modal.bootstrapModal('show')
+  })
+
   QUnit.test('should remove from dom when click [data-dismiss="modal"]', function (assert) {
     assert.expect(3)
     var done = assert.async()
@@ -529,7 +555,9 @@ $(function () {
         done()
       })
       .on('shown.bs.modal', function () {
-        assert.strictEqual($element.data('padding-right'), originalPadding, 'original fixed element padding should be stored in data-padding-right')
+        var dataPaddingRight = $element.data('padding-right')
+        var isCorrect = (dataPaddingRight === originalPadding || typeof dataPaddingRight === 'undefined')
+        assert.true(isCorrect, 'original fixed element padding should be stored in data-padding-right')
         $(this).bootstrapModal('hide')
       })
       .bootstrapModal('show')
@@ -571,7 +599,9 @@ $(function () {
         done()
       })
       .on('shown.bs.modal', function () {
-        assert.strictEqual($element.data('margin-right'), originalPadding, 'original sticky element margin should be stored in data-margin-right')
+        var dataMarginRight = $element.data('margin-right')
+        var isCorrect = (dataMarginRight === originalPadding || typeof dataMarginRight === 'undefined')
+        assert.true(isCorrect, 'original sticky element margin should be stored in data-margin-right')
         $(this).bootstrapModal('hide')
       })
       .bootstrapModal('show')
